@@ -1,3 +1,4 @@
+use std::process::Command;
 use cacao::appkit::{App, AppDelegate};
 use cacao::appkit::window::Window;
 
@@ -15,10 +16,14 @@ impl AppDelegate for BasicApp {
 }
 
 fn main() {
-    let t =
-        r#"tell application "System Events" tell every desktop
-        set picture to "imagePath"
-        end tell
-        end tell"#;
-    App::new("com.hello.world", BasicApp::default()).run();
+    let file_path = "/Users/antonpavliuk/projects/learning/rust/macos/unsplash-rs/the-chaffins-syhIpeHdLdM-unsplash.jpg";
+    let cmd = format!(r#"tell application "System Events"
+tell every desktop
+set picture to "{}"
+end tell
+end tell
+"#,
+    file_path);
+    println!("{}", &cmd);
+    Command::new("osascript").args(&["-e", &cmd]).output().unwrap();
 }
