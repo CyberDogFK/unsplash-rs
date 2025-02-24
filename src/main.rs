@@ -15,7 +15,7 @@ impl AppDelegate for BasicApp {
     }
 }
 
-fn main() {
+fn change_wallpaper() {
     let file_path = "/Users/antonpavliuk/projects/learning/rust/macos/unsplash-rs/the-chaffins-syhIpeHdLdM-unsplash.jpg";
     let cmd = format!(r#"tell application "System Events"
 tell every desktop
@@ -23,7 +23,11 @@ set picture to "{}"
 end tell
 end tell
 "#,
-    file_path);
+                      file_path);
     println!("{}", &cmd);
     Command::new("osascript").args(&["-e", &cmd]).output().unwrap();
+}
+
+fn main() {
+    change_wallpaper();
 }
