@@ -1,10 +1,12 @@
-use std::process::Command;
-use cacao::appkit::{App, AppDelegate};
+mod unsplash;
+
 use cacao::appkit::window::Window;
+use cacao::appkit::{App, AppDelegate};
+use std::process::Command;
 
 #[derive(Default)]
 struct BasicApp {
-    window: Window
+    window: Window,
 }
 
 impl AppDelegate for BasicApp {
@@ -15,19 +17,30 @@ impl AppDelegate for BasicApp {
     }
 }
 
-fn change_wallpaper() {
-    let file_path = "/Users/antonpavliuk/projects/learning/rust/macos/unsplash-rs/the-chaffins-syhIpeHdLdM-unsplash.jpg";
-    let cmd = format!(r#"tell application "System Events"
+fn change_wallpaper(file_name: &str) {
+    let file_path = format!(
+        "/Users/antonpavliuk/projects/learning/rust/macos/unsplash-rs/{}",
+        file_name
+    );
+    let cmd = format!(
+        r#"tell application "System Events"
 tell every desktop
 set picture to "{}"
 end tell
 end tell
 "#,
-                      file_path);
+        file_path
+    );
     println!("{}", &cmd);
-    Command::new("osascript").args(&["-e", &cmd]).output().unwrap();
+    Command::new("osascript")
+        .args(&["-e", &cmd])
+        .output()
+        .unwrap();
 }
 
 fn main() {
-    change_wallpaper();
+    let file_name = "the-chaffins-syhIpeHdLdM-unsplash.jpg";
+    let path = "new_file.jpg";
+    unsplash::test_get_image(path).unwrap();
+    change_wallpaper(path);
 }
