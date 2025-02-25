@@ -1,5 +1,6 @@
 mod unsplash;
 
+use std::env;
 use cacao::appkit::window::Window;
 use cacao::appkit::{App, AppDelegate};
 use std::process::Command;
@@ -23,7 +24,8 @@ fn change_wallpaper(file_name: &str) {
         file_name
     );
     let cmd = format!(
-        r#"tell application "System Events"
+        r#"
+tell application "System Events"
 tell every desktop
 set picture to "{}"
 end tell
@@ -39,8 +41,12 @@ end tell
 }
 
 fn main() {
-    let file_name = "the-chaffins-syhIpeHdLdM-unsplash.jpg";
-    let path = "new_file.jpg";
+    dotenv::dotenv().ok();
+    let result = env::var("API_ACCESS_KEY")
+        .expect("Can't find environment variable API_ACCESS_KEY");
+    println!("{}", result);
+    // let file_name = "the-chaffins-syhIpeHdLdM-unsplash.jpg";
+    let file_path = "new_file.jpg";
     unsplash::test_get_image(path).unwrap();
     change_wallpaper(path);
 }
