@@ -42,11 +42,11 @@ end tell
 
 fn main() {
     dotenv::dotenv().ok();
-    let result = env::var("API_ACCESS_KEY")
+    let access_key = env::var("API_ACCESS_KEY")
         .expect("Can't find environment variable API_ACCESS_KEY");
     println!("{}", result);
     // let file_name = "the-chaffins-syhIpeHdLdM-unsplash.jpg";
+    let random_image = unsplash::get_random_image(&access_key);
     let file_path = "new_file.jpg";
-    unsplash::test_get_image(path).unwrap();
     change_wallpaper(path);
 }
