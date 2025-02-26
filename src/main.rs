@@ -1,6 +1,6 @@
 mod unsplash;
 
-use std::env;
+use std::{env, fs};
 use cacao::appkit::window::Window;
 use cacao::appkit::{App, AppDelegate};
 use std::process::Command;
@@ -46,7 +46,10 @@ fn main() {
     let access_key = env::var("API_ACCESS_KEY")
         .expect("Can't find environment variable API_ACCESS_KEY");
     let random_image: ImageBody = unsplash::get_random_image(&access_key).unwrap();
-    let file_path = format!("{}.jpg", random_image.slug);
+    
+    fs::remove_dir_all("wallpaper").unwrap();
+    fs::create_dir("wallpaper").unwrap();
+    let file_path = format!("./wallpaper/{}.jpg", random_image.slug);
     unsplash::download_image(&random_image.urls.full, &file_path, &access_key).unwrap();
     change_wallpaper(&file_path);
 }
