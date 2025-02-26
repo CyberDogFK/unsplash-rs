@@ -36,7 +36,7 @@ end tell
     );
     println!("{}", &cmd);
     Command::new("osascript")
-        .args(&["-e", &cmd])
+        .args(["-e", &cmd])
         .output()
         .unwrap();
 }
@@ -46,7 +46,7 @@ fn main() {
     let access_key = env::var("API_ACCESS_KEY")
         .expect("Can't find environment variable API_ACCESS_KEY");
     let random_image: ImageBody = unsplash::get_random_image(&access_key).unwrap();
-    let file_path = "new_file.jpg";
-    unsplash::download_image(&random_image.urls.full, file_path, &access_key).unwrap();
-    change_wallpaper(file_path);
+    let file_path = format!("{}.jpg", random_image.slug);
+    unsplash::download_image(&random_image.urls.full, &file_path, &access_key).unwrap();
+    change_wallpaper(&file_path);
 }
