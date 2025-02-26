@@ -4,6 +4,7 @@ use std::env;
 use cacao::appkit::window::Window;
 use cacao::appkit::{App, AppDelegate};
 use std::process::Command;
+use crate::unsplash::ImageBody;
 
 #[derive(Default)]
 struct BasicApp {
@@ -44,9 +45,8 @@ fn main() {
     dotenv::dotenv().ok();
     let access_key = env::var("API_ACCESS_KEY")
         .expect("Can't find environment variable API_ACCESS_KEY");
-    println!("{}", result);
-    // let file_name = "the-chaffins-syhIpeHdLdM-unsplash.jpg";
-    let random_image = unsplash::get_random_image(&access_key);
+    let random_image: ImageBody = unsplash::get_random_image(&access_key).unwrap();
     let file_path = "new_file.jpg";
-    change_wallpaper(path);
+    unsplash::download_image(&random_image.urls.full, file_path, &access_key).unwrap();
+    change_wallpaper(file_path);
 }
