@@ -3,6 +3,7 @@
 extern crate cocoa;
 extern crate objc;
 
+use std::ffi::OsString;
 use cocoa::appkit::{
     NSApplication,
     NSStatusBar,
@@ -114,7 +115,6 @@ fn create_refresh_wallpaper_delegate() -> id {
     unsafe { msg_send![class!(WallpaperUpdateDelegate), new] }
 }
 
-
 //
 // create_popover_content_view: Constructs the popover's content view.
 // The view includes:
@@ -124,7 +124,7 @@ fn create_refresh_wallpaper_delegate() -> id {
 //   - A footer with a logo, version label, an "Alert" button, and a "Refresh" button
 //
 // All colors and fonts use system defaults so that dark/light mode is supported automatically.
-fn create_popover_content_view() -> id {
+fn create_popover_content_view(file_name: &str) -> id {
     unsafe {
         // Main content view.
         let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(420.0, 400.0));
@@ -173,76 +173,30 @@ fn create_popover_content_view() -> id {
         let doc_view: id = msg_send![class!(NSView), alloc];
         let doc_view: id = msg_send![doc_view, initWithFrame: doc_frame];
 
-        // Dummy rows with varied system icons.
-        let icons = ["doc.text", "exclamationmark.circle", "checkmark.circle", "questionmark"];
-        for i in 0..4 {
-            let row_y = 240.0 - ((i + 1) as f64 * 50.0);
-            let row_frame = NSRect::new(NSPoint::new(0.0, row_y), NSSize::new(396.0, 40.0));
-            let row: id = msg_send![class!(NSView), alloc];
-            let row: id = msg_send![row, initWithFrame: row_frame];
-
-            // Icon.
-            let icon_frame = NSRect::new(NSPoint::new(10.0, 10.0), NSSize::new(20.0, 20.0));
-            let icon_view: id = msg_send![class!(NSImageView), alloc];
-            let icon_view: id = msg_send![icon_view, initWithFrame: icon_frame];
-            let icon_str = NSString::alloc(nil).init_str(icons[i % icons.len()]);
-            let icon_img: id = msg_send![class!(NSImage), imageWithSystemSymbolName: icon_str accessibilityDescription: nil];
-            let _: () = msg_send![icon_view, setImage: icon_img];
-            let _: () = msg_send![icon_img, setTemplate: YES];
-            let _: () = msg_send![row, addSubview: icon_view];
-
-            // Label.
-            let label_frame = NSRect::new(NSPoint::new(35.0, 10.0), NSSize::new(250.0, 20.0));
-            let label: id = msg_send![class!(NSTextField), alloc];
-            let label: id = msg_send![label, initWithFrame: label_frame];
-            let text = NSString::alloc(nil).init_str(&format!("Menu Item {}", i + 1));
-            let _: () = msg_send![label, setStringValue: text];
-            let label_font: id = msg_send![class!(NSFont), systemFontOfSize: 14.0];
-            let _: () = msg_send![label, setFont: label_font];
-            let _: () = msg_send![label, setTextColor: label_color];
-            let _: () = msg_send![label, setBezeled: NO];
-            let _: () = msg_send![label, setDrawsBackground: NO];
-            let _: () = msg_send![label, setEditable: NO];
-            let _: () = msg_send![label, setSelectable: NO];
-            let _: () = msg_send![row, addSubview: label];
-
-            // Circular indicator.
-            let circle_frame = NSRect::new(NSPoint::new(320.0, 10.0), NSSize::new(20.0, 20.0));
-            let circle: id = msg_send![class!(NSView), alloc];
-            let circle: id = msg_send![circle, initWithFrame: circle_frame];
-            let _: () = msg_send![circle, setWantsLayer: YES];
-            let layer: id = msg_send![circle, layer];
-            let indicator_color: id = msg_send![class!(NSColor), systemGreenColor];
-            let _: () = msg_send![layer, setBackgroundColor: indicator_color];
-            let _: () = msg_send![layer, setCornerRadius: 10.0];
-            let _: () = msg_send![row, addSubview: circle];
-
-            let _: () = msg_send![doc_view, addSubview: row];
-        }
         let _: () = msg_send![scroll_view, setDocumentView: doc_view];
         let _: () = msg_send![content_view, addSubview: scroll_view];
+
+        // Wallpaper presentation: NSImageView using downloaded image
+        // let logo_frame = NSRect::new(NSPoint::new(10.0, 20.0), NSSize::new(140.0, 140.0));
+        let logo: id = msg_send![class!(NSImageView), alloc];
+        let logo: id = msg_send![logo, initWithFrame: frame];
+        let logo_str = NSString::alloc(nil).init_str(&format!("wallpaper/{}", file_name));
+        let alloc: id = msg_send![class!(NSImage), alloc];
+        let logo_img: id = msg_send![alloc, initWithContentsOfFile: logo_str];
+        let _: () = msg_send![logo, setImage: logo_img];
+        // let _: () = msg_send![logo_img, setTemplate: YES];
+        let _: () = msg_send![doc_view, addSubview: logo];
 
         // --- Footer ---
         let footer_frame = NSRect::new(NSPoint::new(12.0, 12.0), NSSize::new(396.0, 60.0));
         let footer: id = msg_send![class!(NSView), alloc];
         let footer: id = msg_send![footer, initWithFrame: footer_frame];
 
-        // Logo: NSImageView using system symbol "sparkles".
-        let logo_frame = NSRect::new(NSPoint::new(10.0, 20.0), NSSize::new(40.0, 40.0));
-        let logo: id = msg_send![class!(NSImageView), alloc];
-        let logo: id = msg_send![logo, initWithFrame: logo_frame];
-        let logo_str = NSString::alloc(nil).init_str("wallpaper/example.jpg");
-        let alloc: id = msg_send![class!(NSImage), alloc];
-        let logo_img: id = msg_send![alloc, initWithContentsOfFile: logo_str];
-        let _: () = msg_send![logo, setImage: logo_img];
-        let _: () = msg_send![logo_img, setTemplate: YES];
-        let _: () = msg_send![footer, addSubview: logo];
-
         // Version label.
         let version_frame = NSRect::new(NSPoint::new(60.0, 30.0), NSSize::new(100.0, 20.0));
         let version: id = msg_send![class!(NSTextField), alloc];
         let version: id = msg_send![version, initWithFrame: version_frame];
-        let version_str = NSString::alloc(nil).init_str("v4.7.5");
+        let version_str = NSString::alloc(nil).init_str("v0.0.1");
         let _: () = msg_send![version, setStringValue: version_str];
         let version_font: id = msg_send![class!(NSFont), systemFontOfSize: 12.0];
         let _: () = msg_send![version, setFont: version_font];
@@ -284,9 +238,9 @@ fn create_popover_content_view() -> id {
 //
 // create_popover_view_controller: Wraps our content view in an NSViewController.
 //
-fn create_popover_view_controller() -> id {
+fn create_popover_view_controller(file_name: &str) -> id {
     unsafe {
-        let view = create_popover_content_view();
+        let view = create_popover_content_view(file_name);
         let vc: id = msg_send![class!(NSViewController), alloc];
         let vc: id = msg_send![vc, init];
         let _: () = msg_send![vc, setView: view];
@@ -297,25 +251,15 @@ fn create_popover_view_controller() -> id {
 //
 // setup_status_item_and_popover: Creates the tray icon and associates a popover with it.
 //
-pub fn setup_status_item_and_popover() {
+pub fn setup_status_item_and_popover(file_name: &str) {
     unsafe {
         let _app = NSApplication::sharedApplication(nil);
         let status_bar: id = NSStatusBar::systemStatusBar(nil);
         let status_item: id = status_bar.statusItemWithLength_(NSVariableStatusItemLength);
 
-        // Set the tray icon using "shield.fill".
-        let symbol_name = NSString::alloc(nil).init_str("shield.fill");
-        let image: id = msg_send![class!(NSImage), imageWithSystemSymbolName: symbol_name accessibilityDescription: nil];
-        let _: () = msg_send![status_item, setImage: image];
-        let _: () = msg_send![image, setTemplate: YES];
+        set_tray_icon(status_item);
 
-        // Create an NSPopover.
-        let popover: id = msg_send![class!(NSPopover), alloc];
-        let popover: id = msg_send![popover, init];
-        let vc = create_popover_view_controller();
-        let _: () = msg_send![popover, setContentViewController: vc];
-
-        GLOBAL_POPOVER = popover;
+        create_popover(file_name);
 
         // Create a toggle delegate.
         let toggle_delegate: id = create_toggle_delegate();
@@ -331,3 +275,73 @@ pub fn setup_status_item_and_popover() {
             .activateWithOptions_(NSApplicationActivateIgnoringOtherApps);
     }
 }
+
+pub fn create_popover(file_name: &str) {
+    unsafe {
+        // Create an NSPopover.
+        let popover: id = msg_send![class!(NSPopover), alloc];
+        let popover: id = msg_send![popover, init];
+        let vc = create_popover_view_controller(file_name);
+        let _: () = msg_send![popover, setContentViewController: vc];
+
+        GLOBAL_POPOVER = popover;
+    }
+}
+
+fn set_tray_icon(status_item: id) {
+    unsafe {
+        // Set the tray icon using "rainbow".
+        let symbol_name = NSString::alloc(nil).init_str("rainbow");
+        let image: id = msg_send![class!(NSImage), imageWithSystemSymbolName: symbol_name accessibilityDescription: nil];
+        let _: () = msg_send![status_item, setImage: image];
+        let _: () = msg_send![image, setTemplate: YES];
+
+    }
+}
+
+// Dummy rows with varied system icons.
+// let icons = ["doc.text", "exclamationmark.circle", "checkmark.circle", "questionmark"];
+// for i in 0..4 {
+//     let row_y = 240.0 - ((i + 1) as f64 * 50.0);
+//     let row_frame = NSRect::new(NSPoint::new(0.0, row_y), NSSize::new(396.0, 40.0));
+//     let row: id = msg_send![class!(NSView), alloc];
+//     let row: id = msg_send![row, initWithFrame: row_frame];
+//
+//     // Icon.
+//     let icon_frame = NSRect::new(NSPoint::new(10.0, 10.0), NSSize::new(20.0, 20.0));
+//     let icon_view: id = msg_send![class!(NSImageView), alloc];
+//     let icon_view: id = msg_send![icon_view, initWithFrame: icon_frame];
+//     let icon_str = NSString::alloc(nil).init_str(icons[i % icons.len()]);
+//     let icon_img: id = msg_send![class!(NSImage), imageWithSystemSymbolName: icon_str accessibilityDescription: nil];
+//     let _: () = msg_send![icon_view, setImage: icon_img];
+//     let _: () = msg_send![icon_img, setTemplate: YES];
+//     let _: () = msg_send![row, addSubview: icon_view];
+//
+//     // Label.
+//     let label_frame = NSRect::new(NSPoint::new(35.0, 10.0), NSSize::new(250.0, 20.0));
+//     let label: id = msg_send![class!(NSTextField), alloc];
+//     let label: id = msg_send![label, initWithFrame: label_frame];
+//     let text = NSString::alloc(nil).init_str(&format!("Menu Item {}", i + 1));
+//     let _: () = msg_send![label, setStringValue: text];
+//     let label_font: id = msg_send![class!(NSFont), systemFontOfSize: 14.0];
+//     let _: () = msg_send![label, setFont: label_font];
+//     let _: () = msg_send![label, setTextColor: label_color];
+//     let _: () = msg_send![label, setBezeled: NO];
+//     let _: () = msg_send![label, setDrawsBackground: NO];
+//     let _: () = msg_send![label, setEditable: NO];
+//     let _: () = msg_send![label, setSelectable: NO];
+//     let _: () = msg_send![row, addSubview: label];
+//
+//     // Circular indicator.
+//     let circle_frame = NSRect::new(NSPoint::new(320.0, 10.0), NSSize::new(20.0, 20.0));
+//     let circle: id = msg_send![class!(NSView), alloc];
+//     let circle: id = msg_send![circle, initWithFrame: circle_frame];
+//     let _: () = msg_send![circle, setWantsLayer: YES];
+//     let layer: id = msg_send![circle, layer];
+//     let indicator_color: id = msg_send![class!(NSColor), systemGreenColor];
+//     let _: () = msg_send![layer, setBackgroundColor: indicator_color];
+//     let _: () = msg_send![layer, setCornerRadius: 10.0];
+//     let _: () = msg_send![row, addSubview: circle];
+//
+//     let _: () = msg_send![doc_view, addSubview: row];
+// }

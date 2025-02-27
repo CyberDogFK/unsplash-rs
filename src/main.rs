@@ -58,14 +58,18 @@ fn update_image() {
     let file_path = format!("./wallpaper/{}.jpg", random_image.slug);
     unsplash::download_image(&random_image.urls.full, &file_path, &access_key).unwrap();
     change_wallpaper(&file_path);
+    macos::create_popover(&file_path);
 }
 
 fn main() {
     unsafe {
+        let dir = fs::read_dir("wallpaper").unwrap();
+        let file_name = dir.last().unwrap().unwrap().file_name().to_str().unwrap().to_string();
+        
         let _pool = NSAutoreleasePool::new(nil);
         let app = NSApplication::sharedApplication(nil);
         app.setActivationPolicy_(cocoa::appkit::NSApplicationActivationPolicyRegular);
-        macos::setup_status_item_and_popover();
+        macos::setup_status_item_and_popover(&file_name);
         app.run();
     }
 }
