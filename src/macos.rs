@@ -231,8 +231,9 @@ fn create_popover_content_view() -> id {
         let logo_frame = NSRect::new(NSPoint::new(10.0, 20.0), NSSize::new(40.0, 40.0));
         let logo: id = msg_send![class!(NSImageView), alloc];
         let logo: id = msg_send![logo, initWithFrame: logo_frame];
-        let logo_str = NSString::alloc(nil).init_str("sparkles");
-        let logo_img: id = msg_send![class!(NSImage), imageWithSystemSymbolName: logo_str accessibilityDescription: nil];
+        let logo_str = NSString::alloc(nil).init_str("wallpaper/example.jpg");
+        let alloc: id = msg_send![class!(NSImage), alloc];
+        let logo_img: id = msg_send![alloc, initWithContentsOfFile: logo_str];
         let _: () = msg_send![logo, setImage: logo_img];
         let _: () = msg_send![logo_img, setTemplate: YES];
         let _: () = msg_send![footer, addSubview: logo];
